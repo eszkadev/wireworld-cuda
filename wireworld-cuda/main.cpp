@@ -1,4 +1,4 @@
-#define USE_QT
+//#define USE_QT
 
 #ifdef USE_QT
 
@@ -20,9 +20,16 @@ int main(int argc, char* argv[])
 
 // CONSOLE
 
+#include <consoleui.hpp>
+
 int main(int argc, char* argv[])
 {
-    return 0;
+    Consoleui cui;
+
+    if(cui.Run())
+        return 0;
+    else
+        return 1;
 }
 
 #endif

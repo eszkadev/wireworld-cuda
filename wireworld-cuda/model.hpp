@@ -21,6 +21,8 @@ public:
     Model(unsigned int nWidth, unsigned int nHeight);
 
     Map GetMap();
+    unsigned int GetWidth();
+    unsigned int GetHeight();
     Cell GetCell(unsigned int nWidth, unsigned int nHeight);
     void SetCell(unsigned int nWidth, unsigned int nHeight, Cell eCell);
 };

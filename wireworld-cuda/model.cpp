@@ -22,6 +22,16 @@ Map Model::GetMap()
     return m_pMap;
 }
 
+unsigned int Model::GetWidth()
+{
+    return m_nWidth;
+}
+
+unsigned int Model::GetHeight()
+{
+    return m_nHeight;
+}
+
 Cell Model::GetCell(unsigned int nWidth, unsigned int nHeight)
 {
     return m_pMap[nWidth][nHeight];
