@@ -1,8 +1,26 @@
 #include <consoleui.hpp>
 #include <model.hpp>
+#include <simulatorcpp.hpp>
 #include <iostream>
 
 using namespace std;
+
+void lcl_sleep()
+{
+    int j = 1;
+    int k = 0;
+    while(1)
+    {
+        j++;
+        if(j == 25000000)
+        {
+            k++;
+            j = 0;
+        }
+        if(k == 10)
+            break;
+    }
+}
 
 Consoleui::Consoleui()
     : m_pModel(NULL)
@@ -17,8 +35,17 @@ bool Consoleui::Run()
     m_pModel = new Model();
     m_pModel->LoadModel("model1.txt");
 
+    m_pSimulator = new SimulatorCPP(m_pModel);
+    m_pSimulator->Setup();
+
     // TODO: event loop
-    DrawMap();
+    for(int i = 0; i < 30; i++)
+    {
+        cout << "-----------------------------\n";
+        DrawMap();
+        m_pSimulator->Step();
+        lcl_sleep();
+    }
 
     return true;
 }
