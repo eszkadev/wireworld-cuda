@@ -5,6 +5,7 @@
 
 class Simulator
 {
+protected:
     Model* m_pModel;
 
 public:
