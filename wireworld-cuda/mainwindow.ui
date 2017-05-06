@@ -36,7 +36,34 @@
       <item>
        <widget class="QPushButton" name="stepButton">
         <property name="text">
-         <string>Step</string>
+         <string>One Step</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Run</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="runSpinBox">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>10000000</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="stepsButton">
+        <property name="text">
+         <string>Steps</string>
         </property>
        </widget>
       </item>

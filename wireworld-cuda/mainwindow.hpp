@@ -16,6 +16,7 @@ class MainWindow : public QMainWindow
 
 public slots:
     void Step();
+    void Steps();
     void UpdateScroll();
     void UpdateCellSize();
 

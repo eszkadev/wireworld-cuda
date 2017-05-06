@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget* pParent)
     m_pUi->gridLayout->addWidget(m_pRenderArea);
 
     m_pUi->stepButton->connect(m_pUi->stepButton, SIGNAL(clicked()), this, SLOT(Step()));
+    m_pUi->stepsButton->connect(m_pUi->stepsButton, SIGNAL(clicked()), this, SLOT(Steps()));
     m_pUi->horizontalScrollBar->connect(m_pUi->horizontalScrollBar, SIGNAL(sliderMoved(int)), this, SLOT(UpdateScroll()));
     m_pUi->verticalScrollBar->connect(m_pUi->verticalScrollBar, SIGNAL(sliderMoved(int)), this, SLOT(UpdateScroll()));
     m_pUi->cellSlider->connect(m_pUi->cellSlider, SIGNAL(sliderMoved(int)), this, SLOT(UpdateCellSize()));
@@ -40,6 +41,16 @@ void MainWindow::Step()
 {
     m_pSimulator->Step();
     m_pRenderArea->update();
+}
+
+void MainWindow::Steps()
+{
+    unsigned int nCount = m_pUi->runSpinBox->value();
+    while(nCount--)
+    {
+        m_pSimulator->Step();
+        m_pRenderArea->update();
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent*)
