@@ -14,6 +14,7 @@ public:
     QSize minimumSizeHint() const;
     void SetScroll(unsigned int x, unsigned int y);
     unsigned int GetCellSize();
+    void SetCellSize(unsigned int nSize);
 
 protected:
     void paintEvent(QPaintEvent* pEvent);

@@ -53,6 +53,20 @@
         </property>
        </spacer>
       </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Cell size</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="cellSlider">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="1" column="1">

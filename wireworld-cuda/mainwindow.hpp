@@ -17,6 +17,7 @@ class MainWindow : public QMainWindow
 public slots:
     void Step();
     void UpdateScroll();
+    void UpdateCellSize();
 
 public:
     explicit MainWindow(QWidget* pParent = 0);

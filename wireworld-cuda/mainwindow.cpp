@@ -26,6 +26,9 @@ MainWindow::MainWindow(QWidget* pParent)
     m_pUi->stepButton->connect(m_pUi->stepButton, SIGNAL(clicked()), this, SLOT(Step()));
     m_pUi->horizontalScrollBar->connect(m_pUi->horizontalScrollBar, SIGNAL(sliderMoved(int)), this, SLOT(UpdateScroll()));
     m_pUi->verticalScrollBar->connect(m_pUi->verticalScrollBar, SIGNAL(sliderMoved(int)), this, SLOT(UpdateScroll()));
+    m_pUi->cellSlider->connect(m_pUi->cellSlider, SIGNAL(sliderMoved(int)), this, SLOT(UpdateCellSize()));
+    m_pUi->cellSlider->setMinimum(3);
+    m_pUi->cellSlider->setMaximum(30);
 }
 
 MainWindow::~MainWindow()
@@ -45,6 +48,12 @@ void MainWindow::resizeEvent(QResizeEvent*)
     m_pUi->horizontalScrollBar->setMaximum(m_pModel->GetWidth() - m_pRenderArea->width()/m_pRenderArea->GetCellSize());
     m_pUi->verticalScrollBar->setMinimum(0);
     m_pUi->verticalScrollBar->setMaximum(m_pModel->GetHeight() - m_pRenderArea->height()/m_pRenderArea->GetCellSize());
+}
+
+void MainWindow::UpdateCellSize()
+{
+    m_pRenderArea->SetCellSize(m_pUi->cellSlider->sliderPosition());
+    m_pRenderArea->update();
 }
 
 void MainWindow::UpdateScroll()

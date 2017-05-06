@@ -24,6 +24,11 @@ unsigned int RenderArea::GetCellSize()
     return m_nCellSize;
 }
 
+void RenderArea::SetCellSize(unsigned int nSize)
+{
+    m_nCellSize = nSize;
+}
+
 void RenderArea::SetScroll(unsigned int x, unsigned int y)
 {
     m_nStartX = x;
@@ -41,17 +46,17 @@ void RenderArea::paintEvent(QPaintEvent* /* pEvent */)
             QRect aRect(m_nCellSize * (x - m_nStartX), m_nCellSize * (y - m_nStartY), m_nCellSize, m_nCellSize);
             QBrush aBrush;
             QPen aPen;
-            aPen.setColor(QColor(255,255,255));
+            aPen.setColor(QColor(100,100,100));
             switch(m_pModel->GetCell(x, y))
             {
             case Head:
-                aBrush = QBrush(QColor(255, 0, 0));
-                break;
-            case Tail:
                 aBrush = QBrush(QColor(0, 0, 255));
                 break;
+            case Tail:
+                aBrush = QBrush(QColor(255, 0, 0));
+                break;
             case Conductor:
-                aBrush = QBrush(QColor(0, 255, 255));
+                aBrush = QBrush(QColor(255, 255, 0));
                 break;
             default:
                 aBrush = QBrush(QColor(0, 0, 0));
