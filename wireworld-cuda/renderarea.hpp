@@ -12,11 +12,15 @@ public:
     RenderArea(QWidget* pParent = 0, Model* pModel = 0);
 
     QSize minimumSizeHint() const;
+    void SetScroll(unsigned int x, unsigned int y);
+    unsigned int GetCellSize();
 
 protected:
     void paintEvent(QPaintEvent* pEvent);
     Model* m_pModel;
     int m_nCellSize;
+    unsigned int m_nStartX;
+    unsigned int m_nStartY;
 };
 
 #endif // RENDERAREA_HPP

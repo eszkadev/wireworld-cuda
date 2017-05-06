@@ -7,6 +7,8 @@ RenderArea::RenderArea(QWidget* pParent, Model* pModel)
     : QWidget(pParent)
     , m_pModel(pModel)
     , m_nCellSize(3)
+    , m_nStartX(0)
+    , m_nStartY(0)
 {
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
@@ -17,15 +19,26 @@ QSize RenderArea::minimumSizeHint() const
     return QSize(600, 600);
 }
 
+unsigned int RenderArea::GetCellSize()
+{
+    return m_nCellSize;
+}
+
+void RenderArea::SetScroll(unsigned int x, unsigned int y)
+{
+    m_nStartX = x;
+    m_nStartY = y;
+}
+
 void RenderArea::paintEvent(QPaintEvent* /* pEvent */)
 {
     QPainter aPainter(this);
 
-    for(unsigned int y = 0; y < m_pModel->GetHeight(); ++y)
+    for(unsigned int y = m_nStartY; y < m_pModel->GetHeight(); ++y)
     {
-        for(unsigned int x = 0; x < m_pModel->GetWidth(); ++x)
+        for(unsigned int x = m_nStartX; x < m_pModel->GetWidth(); ++x)
         {
-            QRect aRect(m_nCellSize * x, m_nCellSize * y, m_nCellSize, m_nCellSize);
+            QRect aRect(m_nCellSize * (x - m_nStartX), m_nCellSize * (y - m_nStartY), m_nCellSize, m_nCellSize);
             QBrush aBrush;
             QPen aPen;
             aPen.setColor(QColor(255,255,255));

@@ -16,9 +16,11 @@ class MainWindow : public QMainWindow
 
 public slots:
     void Step();
+    void UpdateScroll();
 
 public:
     explicit MainWindow(QWidget* pParent = 0);
+    void resizeEvent(QResizeEvent*);
     ~MainWindow();
 
 private:
