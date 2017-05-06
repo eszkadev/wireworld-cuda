@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     model.cpp \
     consoleui.cpp \
-    simulatorcpp.cpp
+    simulatorcpp.cpp \
+    renderarea.cpp
 
 HEADERS  += mainwindow.hpp \
     model.hpp \
     consoleui.hpp \
     simulator.hpp \
-    simulatorcpp.hpp
+    simulatorcpp.hpp \
+    renderarea.hpp
 
 FORMS    += mainwindow.ui

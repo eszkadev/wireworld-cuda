@@ -33,7 +33,7 @@ bool Consoleui::Run()
     cout << "-----------------------------\n";
 
     m_pModel = new Model();
-    m_pModel->LoadModel("model1.txt");
+    m_pModel->LoadModel("model2.txt");
 
     m_pSimulator = new SimulatorCPP(m_pModel);
     m_pSimulator->Setup();

@@ -84,6 +84,8 @@ void Model::LoadModel(const std::string& rFilePath)
                 SetCell(x, y, eCell);
             }
         }
+
+        aStream.close();
     }
     else
     {

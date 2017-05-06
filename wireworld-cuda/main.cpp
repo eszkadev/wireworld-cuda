@@ -1,4 +1,4 @@
-//#define USE_QT
+#define USE_QT
 
 #ifdef USE_QT
 
