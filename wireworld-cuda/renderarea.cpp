@@ -14,15 +14,10 @@ RenderArea::RenderArea(QWidget* pParent, Model* pModel)
 
 QSize RenderArea::minimumSizeHint() const
 {
-    return QSize(100, 100);
+    return QSize(600, 600);
 }
 
-QSize RenderArea::sizeHint() const
-{
-    return QSize(400, 200);
-}
-
-void RenderArea::paintEvent(QPaintEvent * /* pEvent */)
+void RenderArea::paintEvent(QPaintEvent* /* pEvent */)
 {
     QPainter aPainter(this);
 

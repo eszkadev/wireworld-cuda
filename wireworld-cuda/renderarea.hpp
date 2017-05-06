@@ -12,7 +12,6 @@ public:
     RenderArea(QWidget* pParent = 0, Model* pModel = 0);
 
     QSize minimumSizeHint() const;
-    QSize sizeHint() const;
 
 protected:
     void paintEvent(QPaintEvent* pEvent);
