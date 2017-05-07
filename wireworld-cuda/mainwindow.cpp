@@ -55,6 +55,11 @@ void MainWindow::Steps()
 
 void MainWindow::resizeEvent(QResizeEvent*)
 {
+    UpdateScollbars();
+}
+
+void MainWindow::UpdateScollbars()
+{
     m_pUi->horizontalScrollBar->setMinimum(0);
     m_pUi->horizontalScrollBar->setMaximum(m_pModel->GetWidth() - m_pRenderArea->width()/m_pRenderArea->GetCellSize());
     m_pUi->verticalScrollBar->setMinimum(0);
@@ -64,6 +69,7 @@ void MainWindow::resizeEvent(QResizeEvent*)
 void MainWindow::UpdateCellSize()
 {
     m_pRenderArea->SetCellSize(m_pUi->cellSlider->sliderPosition());
+    UpdateScollbars();
     m_pRenderArea->update();
 }
 

@@ -26,6 +26,9 @@ public:
     ~MainWindow();
 
 private:
+    void UpdateScollbars();
+
+private:
     Ui::MainWindow* m_pUi;
     RenderArea* m_pRenderArea;
     Model* m_pModel;
