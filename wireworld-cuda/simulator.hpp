@@ -14,6 +14,8 @@ public:
     {
     }
 
+    virtual ~Simulator() {}
+
     virtual void Setup() = 0;
     virtual void Step() = 0;
 };

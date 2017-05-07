@@ -102,7 +102,7 @@ void MainWindow::ChangeImplementation()
     else if(sImpl == "CUDA")
     {
         delete m_pSimulator;
-        m_pSimulator = new SimulatorCPP(m_pModel);
+        m_pSimulator = new SimulatorCUDA(m_pModel);
     }
 
     m_pSimulator->Setup();

@@ -4,6 +4,28 @@
 #
 #-------------------------------------------------
 
+PROJECT_DIR = $$system(pwd)
+OBJECTS_DIR = $$PROJECT_DIR/Obj
+
+CUDA_SOURCES += cudakernel.cu
+
+CUDA_DIR = /usr/local/cuda
+INCLUDEPATH += $$CUDA_DIR/include
+QMAKE_LIBDIR += $$CUDA_DIR/lib64
+
+LIBS += -lcudart
+CUDA_INC = $$join(INCLUDEPATH,' -I','-I',' ')
+
+cuda.input = CUDA_SOURCES
+cuda.output = ${OBJECTS_DIR}${QMAKE_FILE_BASE}_cuda.o
+
+cuda.commands = $$CUDA_DIR/bin/nvcc -ccbin g++ -m64 -g -G -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -gencode arch=compute_60,code=sm_60 -gencode arch=compute_60,code=compute_60 -c $$NVCCFLAGS $$CUDA_INC $$LIBS  ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
+
+cuda.dependency_type = TYPE_C
+cuda.depend_command = $$CUDA_DIR/bin/nvcc -ccbin g++ -m64 -g -G -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -gencode arch=compute_60,code=sm_60 -gencode arch=compute_60,code=compute_60 -M $$CUDA_INC $$NVCCFLAGS   ${QMAKE_FILE_NAME}
+
+QMAKE_EXTRA_UNIX_COMPILERS += cuda
+
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
