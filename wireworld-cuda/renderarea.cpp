@@ -46,7 +46,7 @@ void RenderArea::paintEvent(QPaintEvent* /* pEvent */)
             QRect aRect(m_nCellSize * (x - m_nStartX), m_nCellSize * (y - m_nStartY), m_nCellSize, m_nCellSize);
             QBrush aBrush;
             QPen aPen;
-            aPen.setColor(QColor(100,100,100));
+            aPen.setColor(QColor(50, 50, 50));
             switch(m_pModel->GetCell(x, y))
             {
             case Head:
