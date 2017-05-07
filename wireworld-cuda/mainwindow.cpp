@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QPushButton>
 #include <simulatorcpp.hpp>
+#include <simulatorcuda.hpp>
 
 MainWindow::MainWindow(QWidget* pParent)
     : QMainWindow(pParent)
@@ -30,6 +31,7 @@ MainWindow::MainWindow(QWidget* pParent)
     m_pUi->cellSlider->connect(m_pUi->cellSlider, SIGNAL(sliderMoved(int)), this, SLOT(UpdateCellSize()));
     m_pUi->cellSlider->setMinimum(3);
     m_pUi->cellSlider->setMaximum(30);
+    m_pUi->implementationComboBox->connect(m_pUi->implementationComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(ChangeImplementation()));
 }
 
 MainWindow::~MainWindow()
@@ -87,4 +89,21 @@ void MainWindow::UpdateScroll()
 
     m_pRenderArea->SetScroll(x, y);
     m_pRenderArea->update();
+}
+
+void MainWindow::ChangeImplementation()
+{
+    std::string sImpl = m_pUi->implementationComboBox->currentText().toStdString();
+    if(sImpl == "CPU")
+    {
+        delete m_pSimulator;
+        m_pSimulator = new SimulatorCPP(m_pModel);
+    }
+    else if(sImpl == "CUDA")
+    {
+        delete m_pSimulator;
+        m_pSimulator = new SimulatorCPP(m_pModel);
+    }
+
+    m_pSimulator->Setup();
 }
