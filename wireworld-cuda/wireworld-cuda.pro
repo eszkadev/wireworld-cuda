@@ -11,6 +11,7 @@ CUDA_SOURCES += cudakernel.cu
 
 CUDA_DIR = /usr/local/cuda
 INCLUDEPATH += $$CUDA_DIR/include
+INCLUDEPATH += $$PROJECT_DIR
 QMAKE_LIBDIR += $$CUDA_DIR/lib64
 
 LIBS += -lcudart
