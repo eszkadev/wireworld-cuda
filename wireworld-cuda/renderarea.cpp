@@ -69,3 +69,16 @@ void RenderArea::paintEvent(QPaintEvent* /* pEvent */)
         }
     }
 }
+
+void RenderArea::mouseReleaseEvent(QMouseEvent* pEvent)
+{
+    unsigned int x = pEvent->x() / m_nCellSize + m_nStartX;
+    unsigned int y = pEvent->y() / m_nCellSize + m_nStartY;
+
+    Cell eOld = m_pModel->GetCell(x, y);
+    Cell eNew = eOld == Empty ? Conductor : Cell(eOld - 1);
+    m_pModel->SetCell(x, y, eNew);
+    update();
+
+    QWidget::mouseReleaseEvent(pEvent);
+}

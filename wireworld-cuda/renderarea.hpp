@@ -17,6 +17,9 @@ public:
     void SetCellSize(unsigned int nSize);
 
 protected:
+    virtual void mouseReleaseEvent(QMouseEvent* pEvent);
+
+protected:
     void paintEvent(QPaintEvent* pEvent);
     Model* m_pModel;
     int m_nCellSize;
