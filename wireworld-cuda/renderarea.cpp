@@ -2,6 +2,7 @@
 #include <QBrush>
 #include <QPen>
 #include "renderarea.hpp"
+#include "mainwindow.hpp"
 
 RenderArea::RenderArea(QWidget* pParent, Model* pModel)
     : QWidget(pParent)
@@ -81,4 +82,20 @@ void RenderArea::mouseReleaseEvent(QMouseEvent* pEvent)
     update();
 
     QWidget::mouseReleaseEvent(pEvent);
+}
+
+void RenderArea::wheelEvent(QWheelEvent* pEvent)
+{
+    int delta = pEvent->delta();
+
+    if(delta > 0 && m_nCellSize < 30)
+        m_nCellSize++;
+    else if(delta < 0 && m_nCellSize > 3)
+        m_nCellSize--;
+
+    update();
+    MainWindow* pWindow = static_cast<MainWindow*>(parentWidget()->parentWidget());
+    pWindow->resizeEvent(new QResizeEvent(pWindow->size(), pWindow->size()));
+
+    QWidget::wheelEvent(pEvent);
 }

@@ -14,6 +14,8 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+friend class RenderArea;
+
 public slots:
     void Step();
     void Steps();
@@ -22,8 +24,10 @@ public slots:
 
 public:
     explicit MainWindow(QWidget* pParent = 0);
-    void resizeEvent(QResizeEvent*);
     ~MainWindow();
+
+protected:
+    virtual void resizeEvent(QResizeEvent*);
 
 private:
     void UpdateScollbars();

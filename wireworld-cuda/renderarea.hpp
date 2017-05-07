@@ -18,6 +18,7 @@ public:
 
 protected:
     virtual void mouseReleaseEvent(QMouseEvent* pEvent);
+    virtual void wheelEvent(QWheelEvent* pEvent);
 
 protected:
     void paintEvent(QPaintEvent* pEvent);
