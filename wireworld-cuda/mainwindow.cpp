@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <simulatorcpp.hpp>
 #include <simulatorcuda.hpp>
+#include <sstream>
 
 MainWindow::MainWindow(QWidget* pParent)
     : QMainWindow(pParent)
@@ -32,6 +33,9 @@ MainWindow::MainWindow(QWidget* pParent)
     m_pUi->cellSlider->setMinimum(3);
     m_pUi->cellSlider->setMaximum(30);
     m_pUi->implementationComboBox->connect(m_pUi->implementationComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(ChangeImplementation()));
+
+    m_pStatusLabel = new QLabel(m_pUi->statusBar);
+    m_pUi->statusBar->addWidget(m_pStatusLabel);
 }
 
 MainWindow::~MainWindow()
@@ -48,11 +52,17 @@ void MainWindow::Step()
 void MainWindow::Steps()
 {
     unsigned int nCount = m_pUi->runSpinBox->value();
-    while(nCount--)
+    for(unsigned int i = 0; i < nCount; ++i)
     {
         m_pSimulator->Step();
         m_pRenderArea->update();
+
+        std::stringstream ss;
+        ss << i << "/" << nCount;
+
+        m_pStatusLabel->setText(ss.str().c_str());
     }
+    m_pStatusLabel->setText("Done");
 }
 
 void MainWindow::resizeEvent(QResizeEvent*)
@@ -63,13 +73,17 @@ void MainWindow::resizeEvent(QResizeEvent*)
 
 void MainWindow::UpdateScollbars()
 {
+    QPoint aPos = m_pRenderArea->GetScroll();
+
     m_pUi->horizontalScrollBar->setMinimum(0);
     int nMaxWidth = m_pModel->GetWidth() - m_pRenderArea->width()/m_pRenderArea->GetCellSize();
     m_pUi->horizontalScrollBar->setMaximum(nMaxWidth >= 0 ? nMaxWidth : 0);
+    m_pUi->horizontalScrollBar->setValue(aPos.x());
 
     m_pUi->verticalScrollBar->setMinimum(0);
     int nMaxHeight = m_pModel->GetHeight() - m_pRenderArea->height()/m_pRenderArea->GetCellSize();
     m_pUi->verticalScrollBar->setMaximum(nMaxHeight >= 0 ? nMaxHeight : 0);
+    m_pUi->verticalScrollBar->setValue(aPos.y());
 }
 
 void MainWindow::UpdateCellSize()

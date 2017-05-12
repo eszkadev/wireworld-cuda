@@ -13,6 +13,7 @@ public:
 
     QSize minimumSizeHint() const;
     void SetScroll(unsigned int x, unsigned int y);
+    QPoint GetScroll() const;
     unsigned int GetCellSize();
     void SetCellSize(unsigned int nSize);
 

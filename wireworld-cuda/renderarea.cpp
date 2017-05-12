@@ -36,6 +36,11 @@ void RenderArea::SetScroll(unsigned int x, unsigned int y)
     m_nStartY = y;
 }
 
+QPoint RenderArea::GetScroll() const
+{
+    return QPoint(m_nStartX, m_nStartY);
+}
+
 void RenderArea::paintEvent(QPaintEvent* /* pEvent */)
 {
     QPainter aPainter(this);
@@ -86,12 +91,26 @@ void RenderArea::mouseReleaseEvent(QMouseEvent* pEvent)
 
 void RenderArea::wheelEvent(QWheelEvent* pEvent)
 {
-    int delta = pEvent->delta();
+    int nDelta = pEvent->delta();
+    QPoint aPoint = pEvent->pos();
+    int nOldCellSize = m_nCellSize;
 
-    if(delta > 0 && m_nCellSize < 30)
+    if(nDelta > 0 && m_nCellSize < 30)
         m_nCellSize++;
-    else if(delta < 0 && m_nCellSize > 3)
+    else if(nDelta < 0 && m_nCellSize > 3)
         m_nCellSize--;
+
+    // center view in the cursor position
+    if(nOldCellSize != m_nCellSize)// && nDelta > 0)
+    {
+        int nNewX = m_nStartX + ((aPoint.x() / m_nCellSize) - (size().width() / 2 / m_nCellSize)) ;
+        int nNewY = m_nStartY + ((aPoint.y() / m_nCellSize) - (size().height() / 2 / m_nCellSize)) ;
+
+        if(nNewX >= 0 && nNewX < (int)m_pModel->GetWidth() - size().width() / m_nCellSize)
+            m_nStartX = nNewX;
+        if(nNewY >= 0 && nNewY < (int)m_pModel->GetHeight() - size().height() / m_nCellSize)
+            m_nStartY = nNewY;
+    }
 
     update();
     MainWindow* pWindow = static_cast<MainWindow*>(parentWidget()->parentWidget());

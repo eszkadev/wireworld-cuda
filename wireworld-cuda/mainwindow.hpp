@@ -5,6 +5,7 @@
 #include <renderarea.hpp>
 #include <model.hpp>
 #include <simulator.hpp>
+#include <QLabel>
 
 namespace Ui {
 class MainWindow;
@@ -35,6 +36,7 @@ private:
 
 private:
     Ui::MainWindow* m_pUi;
+    QLabel* m_pStatusLabel;
     RenderArea* m_pRenderArea;
     Model* m_pModel;
     Simulator* m_pSimulator;
