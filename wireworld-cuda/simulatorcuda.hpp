@@ -7,6 +7,7 @@ class SimulatorCUDA : public Simulator
 {
 public:
     SimulatorCUDA(Model* pModel);
+    ~SimulatorCUDA();
 
     virtual void Setup();
     virtual void Step();

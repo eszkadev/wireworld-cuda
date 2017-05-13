@@ -6,6 +6,9 @@
 #define BLOCK_X 32
 #define BLOCK_Y 32
 
+Cell* d_pMap = NULL;
+Cell* d_pNewMap = NULL;
+
 __global__ void step(Cell* pOld, Cell* pNew, unsigned int nWidth, unsigned int nHeight)
 {
     int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -66,15 +69,11 @@ __global__ void step(Cell* pOld, Cell* pNew, unsigned int nWidth, unsigned int n
     }
 }
 
-extern "C" int CUDA_step(Model* pModel)
+extern "C" void CUDA_setup(Model* pModel)
 {
     cudaError_t aError = cudaSuccess;
-
-    int nWidth = pModel->GetWidth();
     int nHeight = pModel->GetHeight();
-    Map pMap = pModel->GetMap();
 
-    Cell* d_pMap = NULL;
     aError = cudaMalloc((void**)&d_pMap, nHeight * PART_SIZE * sizeof(Cell));
 
     if(aError != cudaSuccess)
@@ -83,7 +82,6 @@ extern "C" int CUDA_step(Model* pModel)
         exit(EXIT_FAILURE);
     }
 
-    Cell* d_pNewMap = NULL;
     aError = cudaMalloc((void**)&d_pNewMap, nHeight * PART_SIZE * sizeof(Cell));
 
     if(aError != cudaSuccess)
@@ -91,6 +89,45 @@ extern "C" int CUDA_step(Model* pModel)
         fprintf(stderr, "Failed to allocate new Map (error code %s)!\n", cudaGetErrorString(aError));
         exit(EXIT_FAILURE);
     }
+}
+
+extern "C" void CUDA_exit()
+{
+    cudaError_t aError = cudaSuccess;
+
+    aError = cudaFree(d_pMap);
+
+    if(aError != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to free device Map (error code %s)!\n", cudaGetErrorString(aError));
+        exit(EXIT_FAILURE);
+    }
+
+    aError = cudaFree(d_pNewMap);
+
+    if(aError != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to free device new Map (error code %s)!\n", cudaGetErrorString(aError));
+        exit(EXIT_FAILURE);
+    }
+
+    // Reset the device and exit
+    aError = cudaDeviceReset();
+
+    if(aError != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to deinitialize the device! error=%s\n", cudaGetErrorString(aError));
+        exit(EXIT_FAILURE);
+    }
+}
+
+extern "C" int CUDA_step(Model* pModel)
+{
+    cudaError_t aError = cudaSuccess;
+
+    int nWidth = pModel->GetWidth();
+    int nHeight = pModel->GetHeight();
+    Map pMap = pModel->GetMap();
 
     for(int nPart = 0; nPart < nWidth - PART_SIZE; nPart += PART_SIZE)
     {
@@ -133,31 +170,6 @@ extern "C" int CUDA_step(Model* pModel)
 
             nCounter++;
         }
-    }
-
-    aError = cudaFree(d_pMap);
-
-    if(aError != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to free device Map (error code %s)!\n", cudaGetErrorString(aError));
-        exit(EXIT_FAILURE);
-    }
-
-    aError = cudaFree(d_pNewMap);
-
-    if(aError != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to free device new Map (error code %s)!\n", cudaGetErrorString(aError));
-        exit(EXIT_FAILURE);
-    }
-
-    // Reset the device and exit
-    aError = cudaDeviceReset();
-
-    if(aError != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to deinitialize the device! error=%s\n", cudaGetErrorString(aError));
-        exit(EXIT_FAILURE);
     }
 
     return 0;
