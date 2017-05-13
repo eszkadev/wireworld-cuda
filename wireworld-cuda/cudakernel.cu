@@ -2,7 +2,7 @@
 #include <cuda_runtime.h>
 #include <model.hpp>
 
-#define PART_SIZE 256
+#define PART_SIZE 128
 #define BLOCK_X 32
 #define BLOCK_Y 32
 
@@ -129,21 +129,22 @@ extern "C" int CUDA_step(Model* pModel)
     int nHeight = pModel->GetHeight();
     Map pMap = pModel->GetMap();
 
-    for(int nPart = 0; nPart < nWidth - PART_SIZE; nPart += PART_SIZE)
+    int nCounter = 0;
+    for(int i = 0; i < PART_SIZE && i < nWidth; ++i)
     {
-        int nCounter = 0;
-        for(int i = nPart; i < nPart + PART_SIZE && i < nWidth; ++i)
+        aError = cudaMemcpy(d_pMap + (nCounter * nHeight), pMap[i], nHeight * sizeof(Cell), cudaMemcpyHostToDevice);
+
+        if(aError != cudaSuccess)
         {
-            aError = cudaMemcpy(d_pMap + (nCounter * nHeight), pMap[i], nHeight * sizeof(Cell), cudaMemcpyHostToDevice);
-
-            if(aError != cudaSuccess)
-            {
-                fprintf(stderr, "Part: %d Failed to copy Map[%d] from host to device (error code %s)!\n", nPart, i, cudaGetErrorString(aError));
-                exit(EXIT_FAILURE);
-            }
-
-            nCounter++;
+            fprintf(stderr, "Part: %d Failed to copy Map[%d] from host to device (error code %s)!\n", 0, i, cudaGetErrorString(aError));
+            exit(EXIT_FAILURE);
         }
+
+        nCounter++;
+    }
+
+    for(int nPart = 0; nPart < nWidth; nPart += PART_SIZE)
+    {
         dim3 blockDim(BLOCK_X, BLOCK_Y, 1);
         dim3 gridDim((PART_SIZE + BLOCK_X - 1) / BLOCK_X, (nHeight + BLOCK_Y - 1) / BLOCK_Y, 1);
         printf("CUDA kernel launch with %dx%d blocks of %dx%d threads\n", gridDim.x, gridDim.y, blockDim.x, blockDim.y);
@@ -158,9 +159,11 @@ extern "C" int CUDA_step(Model* pModel)
         }
 
         nCounter = 0;
-        for(int i = nPart; i < nPart + PART_SIZE && i < nWidth - PART_SIZE; ++i)
+        for(int i = nPart; i < nPart + PART_SIZE && i < nWidth; ++i)
         {
             aError = cudaMemcpy(pMap[i], d_pNewMap + (nCounter * nHeight), nHeight * sizeof(Cell), cudaMemcpyDeviceToHost);
+            if(i + PART_SIZE < nWidth)
+                aError = cudaMemcpy(d_pMap + (nCounter * nHeight), pMap[i + PART_SIZE], nHeight * sizeof(Cell), cudaMemcpyHostToDevice);
 
             if(aError != cudaSuccess)
             {
