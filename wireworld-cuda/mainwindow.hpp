@@ -18,6 +18,7 @@ class MainWindow : public QMainWindow
 friend class RenderArea;
 
 public slots:
+    void Open();
     void Step();
     void Steps();
     void UpdateScroll();

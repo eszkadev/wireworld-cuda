@@ -1,5 +1,6 @@
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
+#include <QFileDialog>
 #include <QPainter>
 #include <renderarea.hpp>
 #include <QTimer>
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget* pParent)
     m_pRenderArea = new RenderArea(this, m_pModel);
     m_pUi->gridLayout->addWidget(m_pRenderArea);
 
+    m_pUi->openButton->connect(m_pUi->openButton, SIGNAL(clicked()), this, SLOT(Open()));
     m_pUi->stepButton->connect(m_pUi->stepButton, SIGNAL(clicked()), this, SLOT(Step()));
     m_pUi->stepsButton->connect(m_pUi->stepsButton, SIGNAL(clicked()), this, SLOT(Steps()));
     m_pUi->horizontalScrollBar->connect(m_pUi->horizontalScrollBar, SIGNAL(sliderMoved(int)), this, SLOT(UpdateScroll()));
@@ -41,6 +43,15 @@ MainWindow::MainWindow(QWidget* pParent)
 MainWindow::~MainWindow()
 {
     delete m_pUi;
+}
+
+void MainWindow::Open()
+{
+    if(!m_pModel)
+        m_pModel = new Model();
+    std::string sFileName = QFileDialog::getOpenFileName(this, "Open File", "", "Files (*.txt)").toStdString();
+    m_pModel->LoadModel(sFileName);
+    m_pRenderArea->update();
 }
 
 void MainWindow::Step()

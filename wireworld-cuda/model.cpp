@@ -87,10 +87,6 @@ void Model::LoadModel(const std::string& rFilePath)
 
         aStream.close();
     }
-    else
-    {
-        throw;
-    }
 }
 
 Map Model::GetMap()
