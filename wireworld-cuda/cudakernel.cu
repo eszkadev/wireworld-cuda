@@ -2,70 +2,65 @@
 #include <cuda_runtime.h>
 #include <model.hpp>
 
-#define PART_SIZE 100
+#define PART_SIZE 256
 
 __global__ void step(Cell* pOld, Cell* pNew, unsigned int nWidth, unsigned int nHeight)
 {
-    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    int x = blockDim.x * blockIdx.x + threadIdx.x;
+    int y = blockDim.y * blockIdx.y + threadIdx.y;
 
-    for(int x = 0; x < nWidth; ++x)
+    switch(pOld[x * nHeight + y])
     {
-        for(int y = 0; y < nHeight; ++y)
+    case Head:
+        pNew[x * nHeight + y] = Tail;
+        break;
+    case Tail:
+        pNew[x * nHeight + y] = Conductor;
+        break;
+    case Conductor:
         {
-            switch(pOld[x * nHeight + y])
+            unsigned int nHeads = 0;
+
+            bool bRight = x + 1 < nWidth;
+            bool bLeft = x - 1 >= 0;
+            bool bTop = y + 1 < nHeight;
+            bool bBottom = y - 1 >= 0;
+
+            if(bRight)
             {
-            case Head:
-                pNew[x * nHeight + y] = Tail;
-                break;
-            case Tail:
-                pNew[x * nHeight + y] = Conductor;
-                break;
-            case Conductor:
-                {
-                    unsigned int nHeads = 0;
-
-                    bool bRight = x + 1 < nWidth;
-                    bool bLeft = x - 1 >= 0;
-                    bool bTop = y + 1 < nHeight;
-                    bool bBottom = y - 1 >= 0;
-
-                    if(bRight)
-                    {
-                        if(pOld[(x + 1) * nHeight + y] == Head)
-                            nHeads++;
-                        if(bTop && pOld[(x + 1) * nHeight + y + 1] == Head)
-                            nHeads++;
-                        if(bBottom && pOld[(x + 1) * nHeight + y - 1] == Head)
-                            nHeads++;
-                    }
-
-                    if(bLeft)
-                    {
-                        if(pOld[(x - 1) * nHeight + y] == Head)
-                            nHeads++;
-                        if(bTop && pOld[(x - 1) * nHeight + y + 1] == Head)
-                            nHeads++;
-                        if(bBottom && pOld[(x - 1) * nHeight + y - 1] == Head)
-                            nHeads++;
-                    }
-
-                    if(bTop && pOld[x * nHeight + y + 1] == Head)
-                        nHeads++;
-
-                    if(bBottom && pOld[x * nHeight + y - 1] == Head)
-                        nHeads++;
-
-                    if(nHeads == 1 || nHeads == 2)
-                        pNew[x * nHeight + y] = Head;
-                    else
-                        pNew[x * nHeight + y] = Conductor;
-                }
-                break;
-            default:
-                pNew[x * nHeight + y] = Empty;
-                break;
+                if(pOld[(x + 1) * nHeight + y] == Head)
+                    nHeads++;
+                if(bTop && pOld[(x + 1) * nHeight + y + 1] == Head)
+                    nHeads++;
+                if(bBottom && pOld[(x + 1) * nHeight + y - 1] == Head)
+                    nHeads++;
             }
+
+            if(bLeft)
+            {
+                if(pOld[(x - 1) * nHeight + y] == Head)
+                    nHeads++;
+                if(bTop && pOld[(x - 1) * nHeight + y + 1] == Head)
+                    nHeads++;
+                if(bBottom && pOld[(x - 1) * nHeight + y - 1] == Head)
+                    nHeads++;
+            }
+
+            if(bTop && pOld[x * nHeight + y + 1] == Head)
+                nHeads++;
+
+            if(bBottom && pOld[x * nHeight + y - 1] == Head)
+                nHeads++;
+
+            if(nHeads == 1 || nHeads == 2)
+                pNew[x * nHeight + y] = Head;
+            else
+                pNew[x * nHeight + y] = Conductor;
         }
+        break;
+    default:
+        pNew[x * nHeight + y] = Empty;
+        break;
     }
 }
 
@@ -98,7 +93,7 @@ extern "C" int CUDA_step(Model* pModel)
     for(int nPart = 0; nPart < nWidth - PART_SIZE; nPart += PART_SIZE)
     {
         int nCounter = 0;
-        for(int i = nPart; i < nPart + PART_SIZE && i < nWidth - PART_SIZE; ++i)
+        for(int i = nPart; i < nPart + PART_SIZE && i < nWidth; ++i)
         {
             aError = cudaMemcpy(d_pMap + (nCounter * nHeight), pMap[i], nHeight * sizeof(Cell), cudaMemcpyHostToDevice);
 
@@ -110,12 +105,11 @@ extern "C" int CUDA_step(Model* pModel)
 
             nCounter++;
         }
+        dim3 blockDim(32, 32, 1);
+        dim3 gridDim((PART_SIZE + 31) / 32, (nHeight + 31) / 32, 1);
+        printf("CUDA kernel launch with %dx%d blocks of %dx%d threads\n", gridDim.x, gridDim.y, blockDim.x, blockDim.y);
 
-        int threadsPerBlock = 1;//256;
-        int blocksPerGrid = 1;//(nHeight * PART_SIZE + threadsPerBlock - 1) / threadsPerBlock;
-
-        printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-        step<<<blocksPerGrid, threadsPerBlock>>>(d_pMap, d_pNewMap, PART_SIZE, nHeight);
+        step<<<gridDim, blockDim>>>(d_pMap, d_pNewMap, PART_SIZE, nHeight);
         aError = cudaGetLastError();
 
         if(aError != cudaSuccess)
