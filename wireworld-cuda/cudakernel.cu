@@ -3,6 +3,8 @@
 #include <model.hpp>
 
 #define PART_SIZE 256
+#define BLOCK_X 32
+#define BLOCK_Y 32
 
 __global__ void step(Cell* pOld, Cell* pNew, unsigned int nWidth, unsigned int nHeight)
 {
@@ -105,8 +107,8 @@ extern "C" int CUDA_step(Model* pModel)
 
             nCounter++;
         }
-        dim3 blockDim(32, 32, 1);
-        dim3 gridDim((PART_SIZE + 31) / 32, (nHeight + 31) / 32, 1);
+        dim3 blockDim(BLOCK_X, BLOCK_Y, 1);
+        dim3 gridDim((PART_SIZE + BLOCK_X - 1) / BLOCK_X, (nHeight + BLOCK_Y - 1) / BLOCK_Y, 1);
         printf("CUDA kernel launch with %dx%d blocks of %dx%d threads\n", gridDim.x, gridDim.y, blockDim.x, blockDim.y);
 
         step<<<gridDim, blockDim>>>(d_pMap, d_pNewMap, PART_SIZE, nHeight);
