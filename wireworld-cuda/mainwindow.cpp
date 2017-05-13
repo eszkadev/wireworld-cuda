@@ -8,6 +8,7 @@
 #include <simulatorcpp.hpp>
 #include <simulatorcuda.hpp>
 #include <sstream>
+#include <ctime>
 
 MainWindow::MainWindow(QWidget* pParent)
     : QMainWindow(pParent)
@@ -63,6 +64,8 @@ void MainWindow::Step()
 void MainWindow::Steps()
 {
     unsigned int nCount = m_pUi->runSpinBox->value();
+    clock_t nBegin = clock();
+
     for(unsigned int i = 0; i < nCount; ++i)
     {
         m_pSimulator->Step();
@@ -73,7 +76,13 @@ void MainWindow::Steps()
 
         m_pStatusLabel->setText(ss.str().c_str());
     }
-    m_pStatusLabel->setText("Done");
+
+    clock_t nEnd = clock();
+    double nElapsed = double(nEnd - nBegin) / CLOCKS_PER_SEC;
+
+    std::stringstream ss;
+    ss << "Done. Execution time: " << nElapsed << " s";
+    m_pStatusLabel->setText(ss.str().c_str());
 }
 
 void MainWindow::resizeEvent(QResizeEvent*)
