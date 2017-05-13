@@ -57,8 +57,18 @@ void MainWindow::Open()
 
 void MainWindow::Step()
 {
+    clock_t nBegin = clock();
+
     m_pSimulator->Step();
+
+    clock_t nEnd = clock();
+    double nElapsed = double(nEnd - nBegin) / CLOCKS_PER_SEC;
+
     m_pRenderArea->update();
+
+    std::stringstream ss;
+    ss << "Execution time: " << nElapsed << " s";
+    m_pStatusLabel->setText(ss.str().c_str());
 }
 
 void MainWindow::Steps()
@@ -69,7 +79,6 @@ void MainWindow::Steps()
     for(unsigned int i = 0; i < nCount; ++i)
     {
         m_pSimulator->Step();
-        m_pRenderArea->update();
 
         std::stringstream ss;
         ss << i << "/" << nCount;
@@ -80,8 +89,10 @@ void MainWindow::Steps()
     clock_t nEnd = clock();
     double nElapsed = double(nEnd - nBegin) / CLOCKS_PER_SEC;
 
+    m_pRenderArea->update();
+
     std::stringstream ss;
-    ss << "Done. Execution time: " << nElapsed << " s";
+    ss << "Execution time: " << nElapsed << " s";
     m_pStatusLabel->setText(ss.str().c_str());
 }
 
