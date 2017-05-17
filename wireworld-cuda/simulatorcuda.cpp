@@ -1,7 +1,7 @@
 #include "simulatorcuda.hpp"
 
 extern "C" int CUDA_step(Model* pModel);
-extern "C" void CUDA_setup(Model* pModel);
+extern "C" void CUDA_setup();
 extern "C" void CUDA_exit();
 
 SimulatorCUDA::SimulatorCUDA(Model* pModel)
@@ -16,7 +16,7 @@ SimulatorCUDA::~SimulatorCUDA()
 
 void SimulatorCUDA::Setup()
 {
-    CUDA_setup(m_pModel);
+    CUDA_setup();
 }
 
 void SimulatorCUDA::Step()

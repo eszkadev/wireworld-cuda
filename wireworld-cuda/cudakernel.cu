@@ -7,12 +7,18 @@
 #define BLOCK_Y 32
 
 Cell* d_pMap = NULL;
+Cell* d_pNextMap = NULL;
 Cell* d_pNewMap = NULL;
 
 __global__ void step(Cell* pOld, Cell* pNew, unsigned int nWidth, unsigned int nHeight)
 {
     int x = blockDim.x * blockIdx.x + threadIdx.x;
     int y = blockDim.y * blockIdx.y + threadIdx.y;
+
+    // first row is the last row of block neighbour
+    x++;
+    // each row have additional Cell at the end
+    nHeight++;
 
     switch(pOld[x * nHeight + y])
     {
@@ -26,7 +32,7 @@ __global__ void step(Cell* pOld, Cell* pNew, unsigned int nWidth, unsigned int n
         {
             unsigned int nHeads = 0;
 
-            bool bRight = x + 1 < nWidth;
+            bool bRight = x + 1 < nWidth + 1;
             bool bLeft = x - 1 >= 0;
             bool bTop = y + 1 < nHeight;
             bool bBottom = y - 1 >= 0;
@@ -69,12 +75,11 @@ __global__ void step(Cell* pOld, Cell* pNew, unsigned int nWidth, unsigned int n
     }
 }
 
-extern "C" void CUDA_setup(Model* pModel)
+extern "C" void CUDA_setup()
 {
     cudaError_t aError = cudaSuccess;
-    int nHeight = pModel->GetHeight();
 
-    aError = cudaMalloc((void**)&d_pMap, nHeight * PART_SIZE * sizeof(Cell));
+    aError = cudaMalloc((void**)&d_pMap, (PART_SIZE + 1) * (PART_SIZE + 2) * sizeof(Cell));
 
     if(aError != cudaSuccess)
     {
@@ -82,7 +87,15 @@ extern "C" void CUDA_setup(Model* pModel)
         exit(EXIT_FAILURE);
     }
 
-    aError = cudaMalloc((void**)&d_pNewMap, nHeight * PART_SIZE * sizeof(Cell));
+    aError = cudaMalloc((void**)&d_pNewMap, (PART_SIZE + 1) * (PART_SIZE + 2) * sizeof(Cell));
+
+    if(aError != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to allocate new Map (error code %s)!\n", cudaGetErrorString(aError));
+        exit(EXIT_FAILURE);
+    }
+
+    aError = cudaMalloc((void**)&d_pNextMap, (PART_SIZE + 1) * (PART_SIZE + 2) * sizeof(Cell));
 
     if(aError != cudaSuccess)
     {
@@ -129,49 +142,70 @@ extern "C" int CUDA_step(Model* pModel)
     int nHeight = pModel->GetHeight();
     Map pMap = pModel->GetMap();
 
+    static Cell aEmpty[PART_SIZE + 1] = { Empty };
+
     int nCounter = 0;
-    for(int i = 0; i < PART_SIZE && i < nWidth; ++i)
+
+    for(int nY = 0; nY < nHeight; nY += PART_SIZE)
     {
-        aError = cudaMemcpy(d_pMap + (nCounter * nHeight), pMap[i], nHeight * sizeof(Cell), cudaMemcpyHostToDevice);
-
-        if(aError != cudaSuccess)
+        for(int nX = 0; nX < nWidth; nX += PART_SIZE - 1)
         {
-            fprintf(stderr, "Part: %d Failed to copy Map[%d] from host to device (error code %s)!\n", 0, i, cudaGetErrorString(aError));
-            exit(EXIT_FAILURE);
-        }
+            if(nX == 0)
+            {
+                // Fill the first row with Empty cells
+                aError = cudaMemcpy(d_pMap, aEmpty, (PART_SIZE + 1) * sizeof(Cell), cudaMemcpyHostToDevice);
+                if(aError != cudaSuccess)
+                {
+                    fprintf(stderr, "Line: %d, Part: %d Failed to copy Map[%d] from host to device (error code %s)!\n", __LINE__, 0, 0, cudaGetErrorString(aError));
+                    exit(EXIT_FAILURE);
+                }
 
-        nCounter++;
-    }
+                for(nCounter = 0; nCounter < PART_SIZE + 1 && nCounter < nWidth; ++nCounter)
+                {
+                    aError = cudaMemcpy(d_pMap + (nCounter * (PART_SIZE + 1)), pMap[nCounter] + nY, (PART_SIZE + 1) * sizeof(Cell), cudaMemcpyHostToDevice);
 
-    for(int nPart = 0; nPart < nWidth; nPart += PART_SIZE)
-    {
-        dim3 blockDim(BLOCK_X, BLOCK_Y, 1);
-        dim3 gridDim((PART_SIZE + BLOCK_X - 1) / BLOCK_X, (nHeight + BLOCK_Y - 1) / BLOCK_Y, 1);
-        printf("CUDA kernel launch with %dx%d blocks of %dx%d threads\n", gridDim.x, gridDim.y, blockDim.x, blockDim.y);
+                    if(aError != cudaSuccess)
+                    {
+                        fprintf(stderr, "Line: %d, Part: %d Failed to copy Map[%d] from host to device (error code %s)!\n", __LINE__, 0, nCounter, cudaGetErrorString(aError));
+                        exit(EXIT_FAILURE);
+                    }
+                }
+            }
 
-        step<<<gridDim, blockDim>>>(d_pMap, d_pNewMap, PART_SIZE, nHeight);
-        aError = cudaGetLastError();
+            dim3 blockDim(BLOCK_X, BLOCK_Y, 1);
+            dim3 gridDim((PART_SIZE + BLOCK_X - 1) / BLOCK_X, (PART_SIZE + BLOCK_Y - 1) / BLOCK_Y, 1);
+            printf("CUDA kernel launch with %dx%d blocks of %dx%d threads on [%d, %d]\n", gridDim.x, gridDim.y, blockDim.x, blockDim.y, nX, nY);
 
-        if(aError != cudaSuccess)
-        {
-            fprintf(stderr, "Failed to launch step kernel (error code %s)!\n", cudaGetErrorString(aError));
-            exit(EXIT_FAILURE);
-        }
-
-        nCounter = 0;
-        for(int i = nPart; i < nPart + PART_SIZE && i < nWidth; ++i)
-        {
-            aError = cudaMemcpy(pMap[i], d_pNewMap + (nCounter * nHeight), nHeight * sizeof(Cell), cudaMemcpyDeviceToHost);
-            if(i + PART_SIZE < nWidth)
-                aError = cudaMemcpy(d_pMap + (nCounter * nHeight), pMap[i + PART_SIZE], nHeight * sizeof(Cell), cudaMemcpyHostToDevice);
+            step<<<gridDim, blockDim>>>(d_pMap, d_pNewMap, PART_SIZE, PART_SIZE);
+            aError = cudaGetLastError();
 
             if(aError != cudaSuccess)
             {
-                fprintf(stderr, "Part: %d Failed to copy Map[%d] from device to host (error code %s)!\n", nPart, i, cudaGetErrorString(aError));
+                fprintf(stderr, "Failed to launch step kernel (error code %s)!\n", cudaGetErrorString(aError));
                 exit(EXIT_FAILURE);
             }
 
-            nCounter++;
+            nCounter = 0;
+            for(int i = nX; i < nX + PART_SIZE + 2 && i < nWidth; ++i)
+            {
+                if(i < nX + PART_SIZE)
+                    aError = cudaMemcpy(pMap[i] + nY, d_pNewMap + ((nCounter + 1) * (PART_SIZE + 1)), PART_SIZE * sizeof(Cell), cudaMemcpyDeviceToHost);
+
+                if(i + PART_SIZE - 1 < nWidth)
+                    aError = cudaMemcpy(d_pNextMap + (nCounter * (PART_SIZE + 1)), pMap[i + (PART_SIZE - 2)] + nY, (PART_SIZE + 1) * sizeof(Cell), cudaMemcpyHostToDevice);
+
+                if(aError != cudaSuccess)
+                {
+                    fprintf(stderr, "Line: %d, Part: [%d,%d] Failed to copy Map[%d] from host to device (error code %s)!\n", __LINE__, nX, nY, i, cudaGetErrorString(aError));
+                    exit(EXIT_FAILURE);
+                }
+
+                nCounter++;
+            }
+
+            Cell* pTmp = d_pMap;
+            d_pMap = d_pNextMap;
+            d_pNextMap = pTmp;
         }
     }
 
