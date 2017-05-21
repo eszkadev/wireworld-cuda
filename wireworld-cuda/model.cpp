@@ -51,14 +51,14 @@ void Model::NewModel(unsigned int nWidth, unsigned int nHeight)
 {
     if(m_pMap)
     {
-        for(unsigned int i = 0; i < m_nWidth; i++)
+        for(unsigned int i = 0; i < m_nWidth + 2; i++)
             delete[] m_pMap[i];
         delete[] m_pMap;
     }
 
-    m_pMap = new Cell*[nWidth];
-    for(unsigned int i = 0; i < nWidth; i++)
-        m_pMap[i] = new Cell[nHeight];
+    m_pMap = new Cell*[nWidth + 2];
+    for(unsigned int i = 0; i < nWidth + 2; i++)
+        m_pMap[i] = new Cell[nHeight + 2];
 
     m_nHeight = nHeight;
     m_nWidth = nWidth;
@@ -106,10 +106,10 @@ unsigned int Model::GetHeight()
 
 Cell Model::GetCell(unsigned int nWidth, unsigned int nHeight)
 {
-    return m_pMap[nWidth][nHeight];
+    return m_pMap[nWidth + 1][nHeight + 1];
 }
 
 void Model::SetCell(unsigned int nWidth, unsigned int nHeight, Cell eCell)
 {
-    m_pMap[nWidth][nHeight] = eCell;
+    m_pMap[nWidth + 1][nHeight + 1] = eCell;
 }

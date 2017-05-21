@@ -17,7 +17,7 @@ public:
     virtual ~Simulator() {}
 
     virtual void Setup() = 0;
-    virtual void Step() = 0;
+    virtual void Step(int n) = 0;
 };
 
 #endif // SIMULATOR_HPP

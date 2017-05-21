@@ -59,7 +59,7 @@ void MainWindow::Step()
 {
     clock_t nBegin = clock();
 
-    m_pSimulator->Step();
+    m_pSimulator->Step(1);
 
     clock_t nEnd = clock();
     double nElapsed = double(nEnd - nBegin) / CLOCKS_PER_SEC;
@@ -76,15 +76,7 @@ void MainWindow::Steps()
     unsigned int nCount = m_pUi->runSpinBox->value();
     clock_t nBegin = clock();
 
-    for(unsigned int i = 0; i < nCount; ++i)
-    {
-        m_pSimulator->Step();
-
-        std::stringstream ss;
-        ss << i << "/" << nCount;
-
-        m_pStatusLabel->setText(ss.str().c_str());
-    }
+    m_pSimulator->Step(nCount);
 
     clock_t nEnd = clock();
     double nElapsed = double(nEnd - nBegin) / CLOCKS_PER_SEC;

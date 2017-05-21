@@ -10,7 +10,7 @@ public:
     ~SimulatorCUDA();
 
     virtual void Setup();
-    virtual void Step();
+    virtual void Step(int n);
 };
 
 #endif // SIMULATORCUDA_HPP

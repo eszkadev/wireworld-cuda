@@ -1,6 +1,6 @@
 #include "simulatorcuda.hpp"
 
-extern "C" int CUDA_step(Model* pModel);
+extern "C" int CUDA_step(Model* pModel, int n);
 extern "C" void CUDA_setup();
 extern "C" void CUDA_exit();
 
@@ -19,8 +19,8 @@ void SimulatorCUDA::Setup()
     CUDA_setup();
 }
 
-void SimulatorCUDA::Step()
+void SimulatorCUDA::Step(int n)
 {
-    if(CUDA_step(m_pModel) != 0)
+    if(CUDA_step(m_pModel, n) != 0)
         throw;
 }

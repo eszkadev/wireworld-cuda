@@ -9,7 +9,7 @@ public:
     SimulatorCPP(Model* pModel);
 
     virtual void Setup();
-    virtual void Step();
+    virtual void Step(int n);
 };
 
 #endif // SIMULATORCPP_HPP

@@ -43,7 +43,7 @@ bool Consoleui::Run()
     {
         cout << "-----------------------------\n";
         DrawMap();
-        m_pSimulator->Step();
+        m_pSimulator->Step(1);
         lcl_sleep();
     }
 
