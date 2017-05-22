@@ -176,7 +176,6 @@ extern "C" int CUDA_step(Model* pModel, int n)
             dim3 gridDim(GRID_X, GRID_Y, 1);
             printf("CUDA kernel launch with %dx%d blocks of %dx%d threads\n", gridDim.x, gridDim.y, blockDim.x, blockDim.y);
 
-            bool bInverted = false;
             for(int i = 0; i < n; ++i)
             {
                 step<<<gridDim, blockDim, 0, stream>>>(d_pMap, d_pNewMap, nWidth, nHeight);
@@ -189,17 +188,12 @@ extern "C" int CUDA_step(Model* pModel, int n)
                     exit(EXIT_FAILURE);
                 }
 
-                Cell* pTmp = d_pMap;
-                d_pMap = d_pNewMap;
-                d_pNewMap = pTmp;
-                bInverted = !bInverted;
-            }
-
-            if(!bInverted)
-            {
-                Cell* pTmp = d_pMap;
-                d_pMap = d_pNewMap;
-                d_pNewMap = pTmp;
+                if(i + 1 < n)
+                {
+                    Cell* pTmp = d_pMap;
+                    d_pMap = d_pNewMap;
+                    d_pNewMap = pTmp;
+                }
             }
 
             for(int i = 0; i < nWidth + 2; i++)
