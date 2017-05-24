@@ -53,6 +53,8 @@ void MainWindow::Open()
     std::string sFileName = QFileDialog::getOpenFileName(this, "Open File", "", "Files (*.txt)").toStdString();
     m_pModel->LoadModel(sFileName);
     m_pRenderArea->update();
+    UpdateScollbars();
+    UpdateScroll();
 }
 
 void MainWindow::Step()
