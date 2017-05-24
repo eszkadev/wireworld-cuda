@@ -24,6 +24,7 @@ public slots:
     void UpdateScroll();
     void UpdateCellSize();
     void ChangeImplementation();
+    void ApplySettings();
 
 public:
     explicit MainWindow(QWidget* pParent = 0);

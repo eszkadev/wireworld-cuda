@@ -11,6 +11,8 @@ public:
 
     virtual void Setup();
     virtual void Step(int n);
+
+    void ApplySettings(int nCells, int nBlock, int nGrid);
 };
 
 #endif // SIMULATORCUDA_HPP

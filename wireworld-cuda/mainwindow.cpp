@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget* pParent)
     m_pRenderArea = new RenderArea(this, m_pModel);
     m_pUi->gridLayout->addWidget(m_pRenderArea);
 
+    m_pUi->applyButton->connect(m_pUi->applyButton, SIGNAL(clicked()), this, SLOT(ApplySettings()));
     m_pUi->openButton->connect(m_pUi->openButton, SIGNAL(clicked()), this, SLOT(Open()));
     m_pUi->stepButton->connect(m_pUi->stepButton, SIGNAL(clicked()), this, SLOT(Step()));
     m_pUi->stepsButton->connect(m_pUi->stepsButton, SIGNAL(clicked()), this, SLOT(Steps()));
@@ -39,6 +40,8 @@ MainWindow::MainWindow(QWidget* pParent)
 
     m_pStatusLabel = new QLabel(m_pUi->statusBar);
     m_pUi->statusBar->addWidget(m_pStatusLabel);
+
+    m_pUi->applyButton->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -135,6 +138,7 @@ void MainWindow::ChangeImplementation()
     std::string sImpl = m_pUi->implementationComboBox->currentText().toStdString();
     if(sImpl == "CPU")
     {
+        m_pUi->applyButton->setEnabled(false);
         delete m_pSimulator;
         m_pSimulator = new SimulatorCPP(m_pModel);
     }
@@ -142,7 +146,19 @@ void MainWindow::ChangeImplementation()
     {
         delete m_pSimulator;
         m_pSimulator = new SimulatorCUDA(m_pModel);
+        m_pUi->applyButton->setEnabled(true);
     }
 
     m_pSimulator->Setup();
+}
+
+void MainWindow::ApplySettings()
+{
+    SimulatorCUDA* pSimulator = dynamic_cast<SimulatorCUDA*>(m_pSimulator);
+    if(pSimulator)
+    {
+        pSimulator->ApplySettings(m_pUi->cellsEdit->text().toInt(),
+                                  m_pUi->blockEdit->text().toInt(),
+                                  m_pUi->gridEdit->text().toInt());
+    }
 }

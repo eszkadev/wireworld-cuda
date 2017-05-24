@@ -2,22 +2,23 @@
 #include <cuda_runtime.h>
 #include <model.hpp>
 
-#define BLOCK_SIZE 32
-#define CELLS_PER_THREAD 8
-#define GRID_SIZE 16
+int BLOCK_SIZE = 32;
+int CELLS_PER_THREAD = 2;
+int GRID_SIZE = 16;
+
 #define PART_SIZE BLOCK_SIZE * CELLS_PER_THREAD * GRID_SIZE
 
 Map d_pMap = NULL;
 Map d_pNewMap = NULL;
 cudaStream_t stream;
 
-__global__ void step(Map pOld, Map pNew, unsigned int nWidth, unsigned int nHeight)
+__global__ void step(Map pOld, Map pNew, unsigned int nWidth, unsigned int nHeight, int nCells)
 {
-    for(int ix = 0; ix < CELLS_PER_THREAD; ix++)
-    for(int iy = 0; iy < CELLS_PER_THREAD; iy++)
+    for(int ix = 0; ix < nCells; ix++)
+    for(int iy = 0; iy < nCells; iy++)
     {
-        int x = 1 + blockDim.x * blockIdx.x * CELLS_PER_THREAD + threadIdx.x * CELLS_PER_THREAD + ix;
-        int y = 1 + blockDim.y * blockIdx.y * CELLS_PER_THREAD + threadIdx.y * CELLS_PER_THREAD + iy;
+        int x = 1 + blockDim.x * blockIdx.x * nCells + threadIdx.x * nCells + ix;
+        int y = 1 + blockDim.y * blockIdx.y * nCells + threadIdx.y * nCells + iy;
         if(x < nWidth - 1 && y < nHeight - 1)
         {
             switch(pOld[x * nHeight + y])
@@ -176,8 +177,9 @@ void CUDA_step_big_data(Model *pModel, int n)
                 dim3 blockDim(BLOCK_SIZE, BLOCK_SIZE, 1);
                 dim3 gridDim(GRID_SIZE, GRID_SIZE, 1);
                 printf("CUDA big kernel launch with %dx%d blocks of %dx%d threads\n", gridDim.x, gridDim.y, blockDim.x, blockDim.y);
+                fflush(stdout);
 
-                step<<<gridDim, blockDim, 0, stream>>>(d_pMap, d_pNewMap, nRows, nLength);
+                step<<<gridDim, blockDim, 0, stream>>>(d_pMap, d_pNewMap, nRows, nLength, CELLS_PER_THREAD);
 
                 aError = cudaGetLastError();
 
@@ -220,10 +222,11 @@ void CUDA_step_small_data(Model* pModel, int n)
     dim3 blockDim(BLOCK_SIZE, BLOCK_SIZE, 1);
     dim3 gridDim(GRID_SIZE, GRID_SIZE, 1);
     printf("CUDA small kernel launch with %dx%d blocks of %dx%d threads\n", gridDim.x, gridDim.y, blockDim.x, blockDim.y);
+    fflush(stdout);
 
     for(int i = 0; i < n; ++i)
     {
-        step<<<gridDim, blockDim, 0, stream>>>(d_pMap, d_pNewMap, nWidth, nHeight);
+        step<<<gridDim, blockDim, 0, stream>>>(d_pMap, d_pNewMap, nWidth, nHeight, CELLS_PER_THREAD);
 
         aError = cudaGetLastError();
 
@@ -262,3 +265,12 @@ extern "C" int CUDA_step(Model* pModel, int n)
     return 0;
 }
 
+extern "C" void CUDA_set(int nCells, int nBlock, int nGrid)
+{
+    CELLS_PER_THREAD = nCells;
+    BLOCK_SIZE = nBlock;
+    GRID_SIZE = nGrid;
+
+    printf("CUDA settings changed\n");
+    fflush(stdout);
+}
