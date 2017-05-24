@@ -45,9 +45,9 @@ void RenderArea::paintEvent(QPaintEvent* /* pEvent */)
 {
     QPainter aPainter(this);
 
-    for(unsigned int y = m_nStartY; y < m_pModel->GetHeight(); ++y)
+    for(unsigned int y = m_nStartY; y < m_pModel->GetHeight() && y < m_nStartY + size().height() / m_nCellSize; ++y)
     {
-        for(unsigned int x = m_nStartX; x < m_pModel->GetWidth(); ++x)
+        for(unsigned int x = m_nStartX; x < m_pModel->GetWidth() && x < m_nStartX + size().width() / m_nCellSize; ++x)
         {
             QRect aRect(m_nCellSize * (x - m_nStartX), m_nCellSize * (y - m_nStartY), m_nCellSize, m_nCellSize);
             QBrush aBrush;
