@@ -2,11 +2,11 @@
 #include <cuda_runtime.h>
 #include <model.hpp>
 
-#define PART_SIZE 2048
+#define PART_SIZE 4096
 #define BLOCK_X 32
 #define BLOCK_Y 32
-#define GRID_X 16 //(PART_SIZE + BLOCK_X - 1) / BLOCK_X
-#define GRID_Y 16 //(PART_SIZE + BLOCK_Y - 1) / BLOCK_Y
+#define GRID_X 16
+#define GRID_Y 16
 
 Cell* d_pMap = NULL;
 Cell* d_pNewMap = NULL;
@@ -14,10 +14,6 @@ cudaStream_t stream;
 
 __global__ void step(Cell* pOld, Cell* pNew, unsigned int nWidth, unsigned int nHeight)
 {
-    // each row have additional Cell at the end
-    nHeight += 2;
-    nWidth += 2;
-
     for(int ix = 0; ix < PART_SIZE/GRID_X/BLOCK_X; ix++)
     for(int iy = 0; iy < PART_SIZE/GRID_X/BLOCK_X; iy++)
     {
@@ -152,8 +148,8 @@ extern "C" int CUDA_step(Model* pModel, int n)
 {
     cudaError_t aError = cudaSuccess;
 
-    int nWidth = pModel->GetWidth();
-    int nHeight = pModel->GetHeight();
+    int nWidth = pModel->GetWidth() + 2;
+    int nHeight = pModel->GetHeight() + 2;
     Map pMap = pModel->GetMap();
 
     // TODO sliding window
@@ -161,16 +157,12 @@ extern "C" int CUDA_step(Model* pModel, int n)
     {
     //    for(int nX = 0; nX < nWidth; nX += PART_SIZE)
         {
-            for(int i = 0; i < nWidth + 2; i++)
+            aError = cudaMemcpyAsync(d_pMap, pMap, nHeight * nWidth * sizeof(Cell), cudaMemcpyHostToDevice, stream);
+            if(aError != cudaSuccess)
             {
-                aError = cudaMemcpyAsync(d_pMap + i*(nHeight+2), pMap[i], (nHeight + 2) * sizeof(Cell), cudaMemcpyHostToDevice, stream);
-                if(aError != cudaSuccess)
-                {
-                    fprintf(stderr, "Line: %d, Failed to copy Map[%d] from device to host (error code %s)!\n", __LINE__, i, cudaGetErrorString(aError));
-                    exit(EXIT_FAILURE);
-                }
+                fprintf(stderr, "Line: %d, Failed to copy Map from device to host (error code %s)!\n", __LINE__, cudaGetErrorString(aError));
+                exit(EXIT_FAILURE);
             }
-
 
             dim3 blockDim(BLOCK_X, BLOCK_Y, 1);
             dim3 gridDim(GRID_X, GRID_Y, 1);
@@ -196,14 +188,11 @@ extern "C" int CUDA_step(Model* pModel, int n)
                 }
             }
 
-            for(int i = 0; i < nWidth + 2; i++)
+            aError = cudaMemcpyAsync(pMap, d_pNewMap, nHeight * nWidth * sizeof(Cell), cudaMemcpyDeviceToHost, stream);
+            if(aError != cudaSuccess)
             {
-                aError = cudaMemcpyAsync(pMap[i], d_pNewMap + (nHeight+2)*i, (nHeight + 2) * sizeof(Cell), cudaMemcpyDeviceToHost, stream);
-                if(aError != cudaSuccess)
-                {
-                    fprintf(stderr, "Line: %d, Failed to copy Map[%d] from device to host (error code %s)!\n", __LINE__, i, cudaGetErrorString(aError));
-                    exit(EXIT_FAILURE);
-                }
+                fprintf(stderr, "Line: %d, Failed to copy Map from device to host (error code %s)!\n", __LINE__, cudaGetErrorString(aError));
+                exit(EXIT_FAILURE);
             }
         }
     }

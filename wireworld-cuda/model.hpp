@@ -14,7 +14,7 @@ typedef enum Cell
 char CellToChar(Cell eCell);
 Cell CharToCell(char cChar);
 
-typedef Cell** Map;
+typedef Cell* Map;
 
 class Model
 {
