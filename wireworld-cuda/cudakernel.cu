@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 #include <model.hpp>
+#include <devicesinfo.h>
 
 int BLOCK_SIZE = 32;
 int CELLS_PER_THREAD = 8;
@@ -11,6 +12,24 @@ int GRID_SIZE = 16;
 Map d_pMap = NULL;
 Map d_pNewMap = NULL;
 cudaStream_t stream;
+
+extern "C" DevicesInfo* CUDA_getDevicesList()
+{
+    DevicesInfo* info = (DevicesInfo*)malloc(sizeof(DevicesInfo));
+
+    cudaGetDeviceCount(&info->nCount);
+    info->sNames = (char**)malloc(sizeof(char*) * info->nCount);
+
+    for(int nDevice = 0; nDevice < info->nCount; nDevice++)
+    {
+        info->sNames[nDevice] = (char*)malloc(sizeof(char) * 256);
+        cudaDeviceProp aProperties;
+        cudaGetDeviceProperties(&aProperties, nDevice);
+        strncpy(info->sNames[nDevice], aProperties.name, 256);
+    }
+
+    return info;
+}
 
 __global__ void step(Map pOld, Map pNew, unsigned int nWidth, unsigned int nHeight, int nCells)
 {

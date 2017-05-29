@@ -35,6 +35,7 @@ protected:
 
 private:
     void UpdateScollbars();
+    void FillListGPU();
 
 private:
     Ui::MainWindow* m_pUi;

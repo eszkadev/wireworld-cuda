@@ -2,6 +2,7 @@
 #define SIMULATORCUDA_HPP
 
 #include <simulator.hpp>
+#include <devicesinfo.h>
 
 class SimulatorCUDA : public Simulator
 {
@@ -13,6 +14,7 @@ public:
     virtual void Step(int n);
 
     void ApplySettings(int nCells, int nBlock, int nGrid);
+    static DevicesInfo* GetDeivces();
 };
 
 #endif // SIMULATORCUDA_HPP

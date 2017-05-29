@@ -9,6 +9,7 @@
 #include <simulatorcuda.hpp>
 #include <sstream>
 #include <ctime>
+#include <devicesinfo.h>
 
 MainWindow::MainWindow(QWidget* pParent)
     : QMainWindow(pParent)
@@ -42,6 +43,8 @@ MainWindow::MainWindow(QWidget* pParent)
     m_pUi->statusBar->addWidget(m_pStatusLabel);
 
     m_pUi->applyButton->setEnabled(false);
+
+    FillListGPU();
 }
 
 MainWindow::~MainWindow()
@@ -160,5 +163,14 @@ void MainWindow::ApplySettings()
         pSimulator->ApplySettings(m_pUi->cellsEdit->text().toInt(),
                                   m_pUi->blockEdit->text().toInt(),
                                   m_pUi->gridEdit->text().toInt());
+    }
+}
+
+void MainWindow::FillListGPU()
+{
+    DevicesInfo* pInfo = SimulatorCUDA::GetDeivces();
+    for(int i = 0; i < pInfo->nCount; ++i)
+    {
+        m_pUi->gpuList->addItem(pInfo->sNames[i]);
     }
 }

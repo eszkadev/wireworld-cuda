@@ -49,6 +49,7 @@ HEADERS  += mainwindow.hpp \
     simulator.hpp \
     simulatorcpp.hpp \
     renderarea.hpp \
-    simulatorcuda.hpp
+    simulatorcuda.hpp \
+    devicesinfo.h
 
 FORMS    += mainwindow.ui

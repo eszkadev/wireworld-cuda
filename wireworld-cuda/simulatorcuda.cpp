@@ -4,6 +4,7 @@ extern "C" int CUDA_step(Model* pModel, int n);
 extern "C" void CUDA_setup();
 extern "C" void CUDA_exit();
 extern "C" void CUDA_set(int nCells, int nBlock, int nGrid);
+extern "C" DevicesInfo* CUDA_getDevicesList();
 
 SimulatorCUDA::SimulatorCUDA(Model* pModel)
     : Simulator(pModel)
@@ -29,4 +30,9 @@ void SimulatorCUDA::Step(int n)
 void SimulatorCUDA::ApplySettings(int nCells, int nBlock, int nGrid)
 {
     CUDA_set(nCells, nBlock, nGrid);
+}
+
+DevicesInfo* SimulatorCUDA::GetDeivces()
+{
+    return CUDA_getDevicesList();
 }
