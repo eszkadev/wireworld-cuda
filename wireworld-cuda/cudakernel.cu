@@ -114,8 +114,11 @@ extern "C" void CUDA_setup()
 extern "C" void CUDA_exit()
 {
     cudaFree(d_pMap);
+    d_pMap = NULL;
     cudaFree(d_pNewMap);
+    d_pNewMap = NULL;
     cudaStreamDestroy(stream);
+    stream = 0;
     cudaDeviceReset();
 }
 
