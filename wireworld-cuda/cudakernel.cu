@@ -3,7 +3,7 @@
 #include <model.hpp>
 
 int BLOCK_SIZE = 32;
-int CELLS_PER_THREAD = 2;
+int CELLS_PER_THREAD = 8;
 int GRID_SIZE = 16;
 
 #define PART_SIZE BLOCK_SIZE * CELLS_PER_THREAD * GRID_SIZE
@@ -80,6 +80,11 @@ __global__ void step(Map pOld, Map pNew, unsigned int nWidth, unsigned int nHeig
 
 extern "C" void CUDA_setup()
 {
+    cudaFree(d_pMap);
+    cudaFree(d_pNewMap);
+    if(stream)
+        cudaStreamDestroy(stream);
+
     cudaError_t aError = cudaSuccess;
 
     aError = cudaStreamCreate(&stream);
@@ -108,39 +113,10 @@ extern "C" void CUDA_setup()
 
 extern "C" void CUDA_exit()
 {
-    cudaError_t aError = cudaSuccess;
-
-    aError = cudaFree(d_pMap);
-
-    if(aError != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to free device Map (error code %s)!\n", cudaGetErrorString(aError));
-        exit(EXIT_FAILURE);
-    }
-
-    aError = cudaFree(d_pNewMap);
-
-    if(aError != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to free device new Map (error code %s)!\n", cudaGetErrorString(aError));
-        exit(EXIT_FAILURE);
-    }
-
-    aError = cudaStreamDestroy(stream);
-    if(aError != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to destroy cuda stream (error code %s)!\n", cudaGetErrorString(aError));
-        exit(EXIT_FAILURE);
-    }
-
-    // Reset the device and exit
-    aError = cudaDeviceReset();
-
-    if(aError != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to deinitialize the device! error=%s\n", cudaGetErrorString(aError));
-        exit(EXIT_FAILURE);
-    }
+    cudaFree(d_pMap);
+    cudaFree(d_pNewMap);
+    cudaStreamDestroy(stream);
+    cudaDeviceReset();
 }
 
 void CUDA_step_big_data(Model *pModel, int n)
@@ -270,6 +246,8 @@ extern "C" void CUDA_set(int nCells, int nBlock, int nGrid)
     CELLS_PER_THREAD = nCells;
     BLOCK_SIZE = nBlock;
     GRID_SIZE = nGrid;
+
+    CUDA_setup();
 
     printf("CUDA settings changed\n");
     fflush(stdout);
