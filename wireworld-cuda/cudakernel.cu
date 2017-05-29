@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <model.hpp>
 #include <devicesinfo.h>
+#include <omp.h>
 
 int BLOCK_SIZE = 32;
 int CELLS_PER_THREAD = 8;

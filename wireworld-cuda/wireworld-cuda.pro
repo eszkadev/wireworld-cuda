@@ -14,18 +14,19 @@ INCLUDEPATH += $$CUDA_DIR/include
 INCLUDEPATH += $$PROJECT_DIR
 QMAKE_LIBDIR += $$CUDA_DIR/lib64
 
-LIBS += -lcudart
+LIBS += -lcudart -lgomp
 CUDA_INC = $$join(INCLUDEPATH,' -I','-I',' ')
 
 cuda.input = CUDA_SOURCES
 cuda.output = ${OBJECTS_DIR}${QMAKE_FILE_BASE}_cuda.o
 
-cuda.commands = $$CUDA_DIR/bin/nvcc -ccbin g++ -m64 -g -G -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -c $$NVCCFLAGS $$CUDA_INC $$LIBS  ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
+cuda.commands = $$CUDA_DIR/bin/nvcc -ccbin g++ -m64 -Xcompiler -fopenmp -g -G -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -c $$NVCCFLAGS $$CUDA_INC $$LIBS  ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
 
 cuda.dependency_type = TYPE_C
-cuda.depend_command = $$CUDA_DIR/bin/nvcc -ccbin g++ -m64 -g -G -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -M $$CUDA_INC $$NVCCFLAGS   ${QMAKE_FILE_NAME}
+cuda.depend_command = $$CUDA_DIR/bin/nvcc -ccbin g++ -m64 -Xcompiler -fopenmp -g -G -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_37,code=sm_37 -gencode arch=compute_50,code=sm_50 -gencode arch=compute_52,code=sm_52 -M $$CUDA_INC $$NVCCFLAGS   ${QMAKE_FILE_NAME}
 
 QMAKE_EXTRA_COMPILERS += cuda
+QMAKE_CXXFLAGS+= -fopenmp
 
 QT       += core gui
 
