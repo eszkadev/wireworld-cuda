@@ -132,7 +132,7 @@
      </widget>
     </item>
     <item row="1" column="2">
-     <widget class="QGroupBox" name="groupBox">
+     <widget class="QGroupBox" name="cudaGroup">
       <property name="title">
        <string>CUDA Settings</string>
       </property>

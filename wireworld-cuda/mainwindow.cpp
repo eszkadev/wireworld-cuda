@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget* pParent)
     m_pStatusLabel = new QLabel(m_pUi->statusBar);
     m_pUi->statusBar->addWidget(m_pStatusLabel);
 
-    m_pUi->applyButton->setEnabled(false);
+    m_pUi->cudaGroup->setEnabled(false);
 
     FillListGPU();
 }
@@ -141,7 +141,7 @@ void MainWindow::ChangeImplementation()
     std::string sImpl = m_pUi->implementationComboBox->currentText().toStdString();
     if(sImpl == "CPU")
     {
-        m_pUi->applyButton->setEnabled(false);
+        m_pUi->cudaGroup->setEnabled(false);
         delete m_pSimulator;
         m_pSimulator = new SimulatorCPP(m_pModel);
     }
@@ -149,7 +149,7 @@ void MainWindow::ChangeImplementation()
     {
         delete m_pSimulator;
         m_pSimulator = new SimulatorCUDA(m_pModel);
-        m_pUi->applyButton->setEnabled(true);
+        m_pUi->cudaGroup->setEnabled(true);
     }
 
     m_pSimulator->Setup();
