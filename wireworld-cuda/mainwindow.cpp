@@ -150,9 +150,27 @@ void MainWindow::ChangeImplementation()
         delete m_pSimulator;
         m_pSimulator = new SimulatorCUDA(m_pModel);
         m_pUi->cudaGroup->setEnabled(true);
+        ApplySettings();
     }
 
     m_pSimulator->Setup();
+}
+
+int* lcl_QListToArray(const QModelIndexList& rList)
+{
+    int* anArray = new int[MAX_GPUS];
+
+    int i = 0;
+    for(; i < rList.length() && i < MAX_GPUS; ++i)
+        anArray[i] = rList[i].row();
+
+    if(!rList.length())
+        i = 0;
+
+    for(; i < MAX_GPUS; ++i)
+        anArray[i] = -1;
+
+    return anArray;
 }
 
 void MainWindow::ApplySettings()
@@ -162,7 +180,8 @@ void MainWindow::ApplySettings()
     {
         pSimulator->ApplySettings(m_pUi->cellsEdit->text().toInt(),
                                   m_pUi->blockEdit->text().toInt(),
-                                  m_pUi->gridEdit->text().toInt());
+                                  m_pUi->gridEdit->text().toInt(),
+                                  lcl_QListToArray(m_pUi->gpuList->selectionModel()->selectedIndexes()));
     }
 }
 
@@ -172,5 +191,12 @@ void MainWindow::FillListGPU()
     for(int i = 0; i < pInfo->nCount; ++i)
     {
         m_pUi->gpuList->addItem(pInfo->sNames[i]);
+        delete[] pInfo->sNames[i];
     }
+
+    if(pInfo->nCount)
+        m_pUi->gpuList->setCurrentRow(0);
+
+    delete[] pInfo->sNames;
+    delete pInfo;
 }

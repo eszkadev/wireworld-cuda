@@ -13,7 +13,7 @@ public:
     virtual void Setup();
     virtual void Step(int n);
 
-    void ApplySettings(int nCells, int nBlock, int nGrid);
+    void ApplySettings(int nCells, int nBlock, int nGrid, int* pGPU);
     static DevicesInfo* GetDeivces();
 };
 

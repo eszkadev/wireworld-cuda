@@ -7,6 +7,7 @@
 int BLOCK_SIZE = 32;
 int CELLS_PER_THREAD = 8;
 int GRID_SIZE = 16;
+int USE_GPU[MAX_GPUS];
 
 #define PART_SIZE BLOCK_SIZE * CELLS_PER_THREAD * GRID_SIZE
 
@@ -259,16 +260,45 @@ extern "C" int CUDA_step(Model* pModel, int n)
     if(nWidth > PART_SIZE || nHeight > PART_SIZE)
         CUDA_step_big_data(pModel, n);
     else
-        CUDA_step_small_data(pModel, n);
+    {
+        int nGPU = -1;
+        for(int i = 0; i < MAX_GPUS; ++i)
+        {
+            if(USE_GPU[i] == 1)
+            {
+                nGPU = i;
+                break;
+            }
+        }
+        if(nGPU >= 0)
+        {
+            printf("Use GPU %d\n", nGPU);
+            cudaSetDevice(nGPU);
+            CUDA_setup();
+            CUDA_step_small_data(pModel, n);
+        }
+        else
+        {
+            printf("No GPU selected\n");
+        }
+    }
 
     return 0;
 }
 
-extern "C" void CUDA_set(int nCells, int nBlock, int nGrid)
+extern "C" void CUDA_set(int nCells, int nBlock, int nGrid, int* pGPU)
 {
     CELLS_PER_THREAD = nCells;
     BLOCK_SIZE = nBlock;
     GRID_SIZE = nGrid;
+
+    for(int i = 0; i < MAX_GPUS; ++i)
+        USE_GPU[i] = 0;
+
+    for(int i = 0; i < MAX_GPUS && pGPU[i] >= 0; ++i)
+    {
+        USE_GPU[pGPU[i]] = 1;
+    }
 
     CUDA_setup();
 

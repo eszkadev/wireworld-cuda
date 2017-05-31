@@ -7,4 +7,6 @@ typedef struct DevicesInfo
     char** sNames;
 } DevicesInfo;
 
+#define MAX_GPUS 10
+
 #endif // DEVICESINFO_H
