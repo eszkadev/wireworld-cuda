@@ -196,7 +196,6 @@ void CUDA_step_big_data(Model *pModel, int n, int nThreadOrder)
                 }
             }
         }
-        //#pragma omp barrier
     }
 }
 
