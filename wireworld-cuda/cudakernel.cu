@@ -126,6 +126,32 @@ extern "C" void CUDA_setup()
     }
 }
 
+void CUDA_setup_N(int nGPU)
+{
+    int nThreadId = nGPU;
+
+    cudaFree(d_pMap[nThreadId]);
+    cudaFree(d_pNewMap[nThreadId]);
+
+    cudaError_t aError = cudaSuccess;
+
+    aError = cudaMalloc((void**)&d_pMap[nThreadId], (PART_SIZE + 2) * (PART_SIZE + 2) * sizeof(Cell));
+
+    if(aError != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to allocate Map (error code %s)!\n", cudaGetErrorString(aError));
+        exit(EXIT_FAILURE);
+    }
+
+    aError = cudaMalloc((void**)&d_pNewMap[nThreadId], (PART_SIZE + 2) * (PART_SIZE + 2) * sizeof(Cell));
+
+    if(aError != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to allocate new Map (error code %s)!\n", cudaGetErrorString(aError));
+        exit(EXIT_FAILURE);
+    }
+}
+
 extern "C" void CUDA_exit()
 {
     for(int i = 0; i < MAX_GPUS; i++)
@@ -296,8 +322,9 @@ extern "C" int CUDA_step(Model* pModel, int n)
             if(CURRENT_GPU[nGPU] != USE_GPU[nGPU])
             {
                 cudaSetDevice(nGPU);
-                CUDA_setup();
-                CURRENT_GPU[nGPU] = USE_GPU[nGPU];
+                CUDA_setup_N(nGPU);
+                for(int i = 0; i < MAX_GPUS; ++i)
+                    CURRENT_GPU[i] = USE_GPU[i];
             }
 
             cudaError_t aError = cudaStreamCreate(&stream[nGPU]);
