@@ -51,7 +51,7 @@ void Model::NewModel(unsigned int nWidth, unsigned int nHeight)
 {
     delete[] m_pMap;
 
-    m_pMap = new Cell[(nWidth + 2)*(nHeight + 2)];
+    m_pMap = new Cell[(nWidth + 4)*(nHeight + 4)];
 
     m_nHeight = nHeight;
     m_nWidth = nWidth;
